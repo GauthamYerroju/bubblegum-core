@@ -6,7 +6,7 @@ function* iterDirItems(dirName, recurse=false) {
     const dirs = []
     const items = []
     for (const item of fs.readdirSync(dirName, {withFileTypes : true})) {
-        const res = {relPath: path.resolve(dirName, item.name), isDir: item.isDirectory()}
+        const res = {path: path.resolve(dirName, item.name), isDir: item.isDirectory()}
         yield res
         if (recurse && item.isDirectory()) {
             dirs.push(res)
@@ -16,7 +16,7 @@ function* iterDirItems(dirName, recurse=false) {
         --recurse
     }
     for (const dir of dirs) {
-        yield* iterDirItems(dir.relPath, recurse)
+        yield* iterDirItems(dir.path, recurse)
     }
 }
 
