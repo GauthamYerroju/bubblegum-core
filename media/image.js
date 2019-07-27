@@ -1,26 +1,25 @@
-// Supports JPEG, PNG, WebP, TIFF, GIF and SVG
-const sharp = require('sharp')
 const config = require('config')
+const sharp = require('sharp')
+const mime = require('mime-types')
 
-function open(img) {
-    return sharp(img)
+let handlesTypes = 'JPEG, PNG, WebP, TIFF, GIF, SVG'.split(', ').map(ext => mime.lookup('_.' + ext))
+
+function inspect(file) {
+    return sharp(file).metadata()
 }
 
-function getMetadata(img) {
-    return img.metadata()
-}
-
-function resize(img, width, height) {
-    return img.resize({width, height, withoutEnlargement: config.get('image.shrinkOnly')})
-}
-
-function getThumbnail(img) {
+function saveThumbnail(file, path) {
     // Handle simple thumbnails, GIF and PNG with transparency and animated GIFs
+    return Promise.resolve()
+}
+
+function resize(file, width, height) {
+    return sharp(file).resize({width, height, withoutEnlargement: config.get('image.shrinkOnly')})
 }
 
 module.exports = {
-    open,
-    getMetadata,
+    handlesTypes,
+    inspect,
+    saveThumbnail,
     resize,
-    getThumbnail,
 }
