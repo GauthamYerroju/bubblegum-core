@@ -1,6 +1,7 @@
 {
     "fs": {
-        "defaultDir": "test_media"
+        "defaultDir": "test_media",
+        "recurse": false
     },
     "image": {
         "shrinkOnly": true
