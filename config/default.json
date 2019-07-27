@@ -1,0 +1,8 @@
+{
+    "fs": {
+        "defaultDir": "test_media"
+    },
+    "image": {
+        "shrinkOnly": true
+    }
+}

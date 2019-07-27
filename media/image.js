@@ -1,5 +1,6 @@
-const sharp = require('sharp')
 // Supports JPEG, PNG, WebP, TIFF, GIF and SVG
+const sharp = require('sharp')
+const config = require('config')
 
 function open(img) {
     return sharp(img)
@@ -10,7 +11,7 @@ function getMetadata(img) {
 }
 
 function resize(img, width, height) {
-    return img.resize({width, height, withoutEnlargement: true})
+    return img.resize({width, height, withoutEnlargement: config.get('image.shrinkOnly')})
 }
 
 function getThumbnail(img) {

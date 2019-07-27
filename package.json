@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/GauthamYerroju/bubblegum-core#readme",
   "dependencies": {
+    "config": "^3.2.2",
     "sharp": "^0.22.1"
   }
 }
