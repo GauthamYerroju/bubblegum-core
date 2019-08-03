@@ -5,5 +5,10 @@
     },
     "image": {
         "shrinkOnly": true
+    },
+    "statKeys": {
+        "size": "size",
+        "mtime": "mtimeMs",
+        "ctime": "ctimeMs"
     }
 }

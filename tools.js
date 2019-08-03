@@ -1,23 +1,42 @@
 const fs = require('fs')
 const path = require('path')
+const config = require('config')
 
+function* iterDirItems(dirName, recurse=false, sortBy=null, sortReverse=false) {
+    const files = fs.readdirSync(dirName).map(item => makeFileProps(dirName, item))
+    files.sort((a, b) => getSortFunction(a, b, sortBy, sortReverse))
 
-function* iterDirItems(dirName, recurse=false) {
     const dirs = []
-    const items = []
-    for (const item of fs.readdirSync(dirName, {withFileTypes : true})) {
-        const res = {path: path.resolve(dirName, item.name), isDir: item.isDirectory()}
-        yield res
-        if (recurse && item.isDirectory()) {
-            dirs.push(res)
-        }
+    for (const item of files) {
+        yield item
+        if (recurse && item.dir) dirs.push(item);
     }
-    if (recurse && (typeof recurse === 'number')) {
-        --recurse
-    }
+    if (recurse && (typeof recurse === 'number')) --recurse;
     for (const dir of dirs) {
-        yield* iterDirItems(dir.path, recurse)
+        yield* iterDirItems(dir.path, recurse, sortBy, sortReverse)
     }
+}
+
+function makeFileProps(dirName, item) {
+    const fullPath = path.resolve(dirName, item)
+    const stat = fs.statSync(fullPath)
+    const res = {
+        'name': item,
+        'path': fullPath,
+        'dir': stat.isDirectory(),
+    }
+    for (const [sortKey, statKey] of Object.entries(config.get("statKeys"))) {
+        res[sortKey] = stat[statKey]
+    }
+    return res
+}
+
+function getSortFunction(a, b, sortBy, sortReverse) {
+    sortBy = (Object.keys(config.get("statKeys"))).includes(sortBy) ? sortBy : 'name'
+    const plusOne = sortReverse ? -1 : 1
+    if (a[sortBy] > b[sortBy]) return plusOne;
+    if (a[sortBy] < b[sortBy]) return -plusOne;
+    return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
 }
 
 module.exports = {
