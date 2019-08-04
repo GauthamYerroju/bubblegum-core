@@ -1,32 +1,78 @@
 const mime = require('mime-types')
 
-const imageHandler = require('./image.js')
-const fallbackHandler = require('./fallback.js')
 
-// TODO: Make a proper interface instead of using the pointless fallback file
+class DefaultHandler {
 
-let handlers = [imageHandler]
+    static name = 'DefaultHandler'
 
-function getHandler(type) {
-    for (const handler of handlers) {
-        if (handler.handlesTypes.includes(type)) {
-            return handler
+    static inspect(file) {
+        return Promise.reject(`Handler not found for: ${file}.`)
+    }
+    
+    static saveThumbnail(file, dest) {
+        return Promise.reject(`Handler not found for: ${file}.`)
+    }
+}
+
+class Media {
+
+    static typeMap = {false: {
+        current: DefaultHandler.name,
+        available: {[DefaultHandler.name]: DefaultHandler}
+    }}
+    static nameMap = {[DefaultHandler.name]: DefaultHandler}
+
+    static addHandler(handler) {
+        // TODO: check handler class
+        if (!(handler && handler.name)) {
+            throw `Invalid handler: ${handler}`
+        }
+        if (handler.name in this.nameMap) {
+            console.warn(`${handler.name} is already registered.`)
+            return
+        }
+        this.nameMap[handler.name] = handler
+        for (const type of handler.handlesTypes) {
+            if (!(type in this.typeMap)) {
+                this.typeMap[type] = {
+                    current: handler.name,
+                    available: { [handler.name]: handler }
+                }
+            } else {
+                if (handler.name in this.typeMap[type].available) {
+                    throw `${handler.name} is already registered for ${type}.`
+                } else {
+                    this.typeMap[type].available[handler.name] = handler
+                }
+            }
         }
     }
-    return fallbackHandler
+
+    static getHandlers(type) {
+        return this.typeMap[type].available.values()
+    }
+    
+    static getHandler(type) {
+        return this.typeMap[type].available[this.typeMap[type].current]
+    }
+
+    static setHandler(type, handler) {
+        if (!handler.name in this.nameMap) {
+            throw `${handler.name} is not registered.`
+        }
+        this.typeMap[type].current = handler.name
+    }
+    
+    static inspect(file) {
+        const handler = this.getHandler(mime.lookup(file))
+        return handler.inspect(file)
+    }
+    
+    static saveThumbnail(file, dest) {
+        const handler = this.getHandler(mime.lookup(file))
+        return handler.saveThumbnail(file, dest)
+    }
 }
 
-function inspect(file) {
-    const handler = getHandler(mime.lookup(file))
-    return handler.inspect(file)
-}
 
-function saveThumbnail(file, dest) {
-    const handler = getHandler(mime.lookup(file))
-    return handler.saveThumbnail(file, dest)
-}
-
-module.exports = {
-    inspect,
-    saveThumbnail
-}
+module.exports = { Media, DefaultHandler }

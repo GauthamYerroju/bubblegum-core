@@ -1,7 +1,12 @@
 const process = require('process')
 const config = require('config')
-const { iterDirItems } = require('./tools.js')
-const media = require('./media')
+const { iterDir } = require('./tools.js')
+const { Media } = require('./media')
+const { ImageHandler } = require('./media/image')
+
+console.table(Media.nameMap)
+Media.addHandler(ImageHandler)
+console.table(Media.nameMap)
 
 
 const dir = process.argv[2] || config.get('fs.defaultDir')
@@ -10,6 +15,6 @@ const sortBy = process.argv[4] || 'name'
 console.log(dir, recurse, sortBy)
 
 
-for (const item of iterDirItems(dir, recurse, sortBy)) {
-    media.inspect(item.path).then(meta => console.log(meta))
+for (const item of iterDir(dir, recurse, sortBy)) {
+    Media.inspect(item.path).then(meta => console.log(meta)).catch(err => console.error(err))
 }

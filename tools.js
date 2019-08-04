@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const config = require('config')
 
-function* iterDirItems(dirName, recurse=false, sortBy=null, sortReverse=false) {
+function* iterDir(dirName, recurse=false, sortBy=null, sortReverse=false) {
     const files = fs.readdirSync(dirName).map(item => makeFileProps(dirName, item))
     files.sort((a, b) => getSortFunction(a, b, sortBy, sortReverse))
 
@@ -13,7 +13,7 @@ function* iterDirItems(dirName, recurse=false, sortBy=null, sortReverse=false) {
     }
     if (recurse && (typeof recurse === 'number')) --recurse;
     for (const dir of dirs) {
-        yield* iterDirItems(dir.path, recurse, sortBy, sortReverse)
+        yield* iterDir(dir.path, recurse, sortBy, sortReverse)
     }
 }
 
@@ -40,5 +40,5 @@ function getSortFunction(a, b, sortBy, sortReverse) {
 }
 
 module.exports = {
-    iterDirItems
+    iterDir
 }
