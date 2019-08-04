@@ -15,7 +15,7 @@ class ImageHandler extends DefaultHandler {
     
     static saveThumbnail(file, dest) {
         // Handle simple thumbnails, GIF and PNG with transparency and animated GIFs
-        return Promise.resolve()
+        return Promise.resolve(file)
     }
 
     static resize(file, width, height) {

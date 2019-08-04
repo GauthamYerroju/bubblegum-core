@@ -8,7 +8,6 @@ class DefaultHandler {
     static inspect(file) {
         return Promise.reject(`Handler not found for: ${file}.`)
     }
-    
     static saveThumbnail(file, dest) {
         return Promise.reject(`Handler not found for: ${file}.`)
     }
@@ -48,8 +47,12 @@ class Media {
         }
     }
 
+    static getHandledTypes() {
+        return Object.keys(this.typeMap)
+    }
+
     static getHandlers(type) {
-        return this.typeMap[type].available.values()
+        return Object.values(this.typeMap[type].available)
     }
     
     static getHandler(type) {

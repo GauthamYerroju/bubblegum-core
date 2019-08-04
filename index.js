@@ -4,10 +4,8 @@ const { iterDir } = require('./tools.js')
 const { Media } = require('./media')
 const { ImageHandler } = require('./media/image')
 
-console.table(Media.nameMap)
 Media.addHandler(ImageHandler)
-console.table(Media.nameMap)
-
+console.table(Media.getHandledTypes())
 
 const dir = process.argv[2] || config.get('fs.defaultDir')
 const recurse = process.argv[3] || config.get('fs.recurse')
