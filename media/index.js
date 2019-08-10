@@ -15,17 +15,10 @@ class DefaultHandler {
 
 class Media {
 
-    static typeMap = {false: {
-        current: DefaultHandler.name,
-        available: {[DefaultHandler.name]: DefaultHandler}
-    }}
-    static nameMap = {[DefaultHandler.name]: DefaultHandler}
+    static typeMap = {}
+    static nameMap = {}
 
     static addHandler(handler) {
-        // TODO: check handler class
-        if (!(handler && handler.name)) {
-            throw `Invalid handler: ${handler}`
-        }
         if (handler.name in this.nameMap) {
             console.warn(`${handler.name} is already registered.`)
             return
@@ -52,11 +45,13 @@ class Media {
     }
 
     static getHandlers(type) {
-        return Object.values(this.typeMap[type].available)
+        const hSpec = this.typeMap[type]
+        return hSpec ? Object.values(hSpec.available) : [DefaultHandler]
     }
     
     static getHandler(type) {
-        return this.typeMap[type].available[this.typeMap[type].current]
+        const hSpec = this.typeMap[type]
+        return hSpec ? hSpec.available[hSpec.current] : DefaultHandler
     }
 
     static setHandler(type, handler) {
