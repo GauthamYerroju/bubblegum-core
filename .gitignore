@@ -60,6 +60,7 @@ typings/
 # next.js build output
 .next
 
-# folder for test media
+# Test and auto-generated items
+*.db
 test_media
 thumbnails

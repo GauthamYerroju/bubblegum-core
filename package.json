@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/GauthamYerroju/bubblegum-core#readme",
   "dependencies": {
+    "better-sqlite3": "^5.4.3",
     "config": "^3.2.2",
     "fluent-ffmpeg": "^2.1.2",
     "mime-types": "^2.1.24",

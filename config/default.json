@@ -11,5 +11,10 @@
         "size": "size",
         "mtime": "mtimeMs",
         "ctime": "ctimeMs"
+    },
+    "db": {
+        "file": "data.db",
+        "wal": true,
+        "verbose": false
     }
 }

@@ -25,6 +25,9 @@ function makeFileProps(dirName, item) {
         'path': fullPath,
         'dir': stat.isDirectory(),
     }
+    if (!res.dir) {
+        res.ext = path.extname(item)
+    }
     for (const [sortKey, statKey] of Object.entries(config.get("statKeys"))) {
         res[sortKey] = stat[statKey]
     }
