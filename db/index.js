@@ -6,7 +6,9 @@ const query = require('./query.js')
 // NOTE: Relying on IIFE for singleton behavior (multiple imports, one connection)
 const public = (() => {
     // Connect to database
-    const options = config.get('db.verbose') ? { verbose: console.log } : undefined
+    const options = {
+        verbose: config.get('db.verbose') ? console.log : undefined
+    }
     const db = new Database(config.get('db.file'), options)
     if (config.get('db.wal')) {
         db.pragma('journal_mode = WAL')

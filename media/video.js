@@ -11,7 +11,21 @@ class VideoHandler extends DefaultHandler {
     static handlesTypes = 'AVI, MP4, WEBM, MKV, FLV'.split(', ').map(ext => mime.lookup('_.' + ext))
 
     static inspect(file) {
-        return promisify(Ffmpeg.ffprobe)(file)
+        return new Promise((resolve, reject) => {
+            promisify(Ffmpeg.ffprobe)(file)
+            .then(data => {
+                if (data.streams) {
+                    for (const stream of data.streams) {
+                        if (stream && stream.width) {
+                            resolve({width: stream.width, height: stream.height})
+                            return
+                        }
+                    }
+                }
+                reject({error: {message: 'Cannot find metadata', data: data}})
+            })
+            .catch(reject)
+        })
     }
     
     static saveThumbnail(file, dest) {

@@ -12,30 +12,25 @@ module.exports = {
 }
 
 // TODO: normalize backslashes to forward slashes in tools#iterDir
-// TODO: Why do I need path in file_info table again? Reminder: layered diffing (id by path, check mtime, if changed, check xxhash, then redo thumbnail)
+// TODO: Why do I need path in file_info table again? Implement xxhash and check IO. If too much, fall back to layered diffing using mtime and xxhash
 
-const sandbox = true
+const sandbox = false
 if (sandbox) {
     const process = require('process')
     const config = require('config')
+    const tools = require('./tools.js')
+    const db = require('./db')
+
     const dir = process.argv[2] || config.get('fs.defaultDir')
     const recurse = process.argv[3] || config.get('fs.recurse')
     const sortBy = process.argv[4] || 'name'
     console.log(dir, recurse, sortBy)
 
-    const db = require('./db')
+    const promises = []
     for (const item of iterDir(dir, recurse, sortBy)) {
-        Media.inspect(item.path).then(meta => {
-            console.log(meta)
-            db.addFile({
-                name: item.name,
-                xxhash: null,
-                mtime: item.mtime,
-                ext: item.ext,
-                width: 0,
-                height: 0,
-            })
-        }).catch(err => console.error(err))
+        promises.push(tools.getFileData(item))
     }
-    // console.table(db._db.prepare("SELECT * FROM file_info;").all())
+    Promise.all(promises).then(() => {
+        console.table(db._db.prepare("SELECT * FROM file_info;").all())
+    })
 }

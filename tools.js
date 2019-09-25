@@ -1,6 +1,13 @@
 const fs = require('fs')
 const path = require('path')
 const config = require('config')
+const xxhash = require('xxhash')
+const db = require('./db')
+const { Media } = require('./media')
+
+function hash(data) {
+    return xxhash.hash64(data, 0xCAFEBABE, 'hex')
+}
 
 function* iterDir(dirName, recurse=false, sortBy=null, sortReverse=false) {
     const files = fs.readdirSync(dirName).map(item => makeFileProps(dirName, item))
@@ -17,6 +24,7 @@ function* iterDir(dirName, recurse=false, sortBy=null, sortReverse=false) {
     }
 }
 
+// This should only have stuff from fs.stat, post-process the results if needed.
 function makeFileProps(dirName, item) {
     const fullPath = path.resolve(dirName, item)
     const stat = fs.statSync(fullPath)
@@ -42,6 +50,39 @@ function getSortFunction(a, b, sortBy, sortReverse) {
     return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
 }
 
+// This is the driver method for reading file info from database, hashing, thumbnailing, etc.
+function getFileData(item) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(item.path, (err, file) => {
+            if (err) {
+                reject(err)
+            } else {
+                const id = hash(file)
+                const row = db.getFile(id)
+                if (row) {
+                    console.log(row)
+                    resolve(row)
+                } else {
+                    Media.inspect(item.path).then(meta => {
+                        console.log(meta)
+                        const data = {
+                            name: item.name,
+                            xxhash: id,
+                            mtime: item.mtime,
+                            ext: item.ext,
+                            width: meta.width,
+                            height: meta.height,
+                        }
+                        resolve(data)
+                        db.addFile(data)
+                    }).catch(reject)
+                }
+            }
+        })
+    })
+}
+
 module.exports = {
-    iterDir
+    iterDir,
+    getFileData
 }
