@@ -60,11 +60,9 @@ function getFileData(item) {
                 const id = hash(file)
                 const row = db.getFile(id)
                 if (row) {
-                    console.log(row)
-                    resolve(row)
+                    resolve(Object.assign(item, row))
                 } else {
                     Media.inspect(item.path).then(meta => {
-                        console.log(meta)
                         const data = {
                             name: item.name,
                             xxhash: id,
@@ -73,7 +71,7 @@ function getFileData(item) {
                             width: meta.width,
                             height: meta.height,
                         }
-                        resolve(data)
+                        resolve(Object.assign(item, data))
                         db.addFile(data)
                     }).catch(reject)
                 }

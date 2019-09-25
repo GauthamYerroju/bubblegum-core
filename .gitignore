@@ -62,5 +62,7 @@ typings/
 
 # Test and auto-generated items
 *.db
+*.db-shm
+*.db-wal
 test_media
 thumbnails

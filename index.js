@@ -1,4 +1,5 @@
-const { iterDir } = require('./tools.js')
+const db = require('./db')
+const { iterDir, getFileData } = require('./tools.js')
 const { Media } = require('./media')
 const { ImageHandler } = require('./media/image')
 const { VideoHandler } = require('./media/video')
@@ -8,7 +9,7 @@ Media.addHandler(VideoHandler)
 
 module.exports = {
     iterDir,
-    Media
+    getFileData
 }
 
 // TODO: normalize backslashes to forward slashes in tools#iterDir
@@ -19,7 +20,7 @@ if (sandbox) {
     const process = require('process')
     const config = require('config')
     const tools = require('./tools.js')
-    const db = require('./db')
+    
 
     const dir = process.argv[2] || config.get('fs.defaultDir')
     const recurse = process.argv[3] || config.get('fs.recurse')
@@ -28,7 +29,7 @@ if (sandbox) {
 
     const promises = []
     for (const item of iterDir(dir, recurse, sortBy)) {
-        promises.push(tools.getFileData(item))
+        promises.push(getFileData(item))
     }
     Promise.all(promises).then(() => {
         console.table(db._db.prepare("SELECT * FROM file_info;").all())
