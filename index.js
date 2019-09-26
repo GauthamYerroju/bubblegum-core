@@ -10,6 +10,7 @@ Media.addHandler(VideoHandler)
 module.exports = {
     iterDir,
     getFileData,
+    // TODO: Wrap these around functions which will check file's existance, and update/clean DB when file no longer exists.
     searchDb: db.searchPage,
     iterDb: db.searchIter
 }
