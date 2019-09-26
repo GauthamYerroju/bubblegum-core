@@ -9,7 +9,9 @@ Media.addHandler(VideoHandler)
 
 module.exports = {
     iterDir,
-    getFileData
+    getFileData,
+    searchDb: db.searchPage,
+    iterDb: db.searchIter
 }
 
 // TODO: normalize backslashes to forward slashes in tools#iterDir

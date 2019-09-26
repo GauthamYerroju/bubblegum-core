@@ -15,6 +15,6 @@
     "db": {
         "file": "data.db",
         "wal": true,
-        "verbose": false
+        "verbose": true
     }
 }

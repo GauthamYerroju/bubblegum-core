@@ -11,7 +11,7 @@ const queries = {
     removeFile: `DELETE FROM ${fileTable} WHERE xxhash=@xxhash;`,
     // Thumbnail Info
     createThumbTable: `CREATE TABLE IF NOT EXISTS ${thumbTable} (id INTEGER PRIMARY KEY, xxhash TEXT, sequence INTEGER);`,
-    getThumb: `SELECT * FROM ${thumbTable} where xxhash=@xxhash;`,
+    getThumb: `SELECT * FROM ${thumbTable} WHERE xxhash=@xxhash;`,
     addThumb: `INSERT INTO ${thumbTable} (xxhash, sequence) VALUES (@xxhash, @sequence);`,
     removeThumb: `DELETE FROM ${thumbTable} WHERE xxhash=@xxhash;`,
     // Tag Types
@@ -19,8 +19,7 @@ const queries = {
     // Tag Definitions
     createTagDefTable: `CREATE TABLE IF NOT EXISTS ${tagDefTable} (id INTEGER PRIMARY KEY, name TEXT, type_id INTEGER REFERENCES ${tagTypeTable}(id) ON DELETE SET NULL);`,
     // Tag-File Mappings
-    createTagFileMapTable: `CREATE TABLE IF NOT EXISTS ${tagFileMapTable} (id INTEGER PRIMARY KEY, file_id INTEGER REFERENCES ${fileTable}(id) ON DELETE CASCADE, tag_id INTEGER REFERENCES ${tagDefTable}(id) ON DELETE CASCADE);`,
-    // TODO: dynamic queries (pagination, sort, filter, etc)
+    createTagFileMapTable: `CREATE TABLE IF NOT EXISTS ${tagFileMapTable} (id INTEGER PRIMARY KEY, file_id INTEGER REFERENCES ${fileTable}(id) ON DELETE CASCADE, tag_id INTEGER REFERENCES ${tagDefTable}(id) ON DELETE CASCADE);`
 }
 
 module.exports = queries

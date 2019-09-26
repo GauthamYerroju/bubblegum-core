@@ -18,6 +18,26 @@ const public = (() => {
     const st = {}
     for (let [k, v] of Object.entries(query)) {
         k.startsWith('create') ? db.exec(v) : st[k] = db.prepare(v)
+        // Search statements are created on demand and cached.
+        // Why? "ORDER BY col_name" doesn't work in db.prepare() because it becomes "ORDER BY 'col_name'".
+        st._cache = {}
+        st.search = (orderby, desc, limit, offset) => {
+            // Limit and offset values don't matter, just whether they exist or not
+            const key = [orderby, desc, (limit !== undefined), (offset !== undefined)]
+            if (!(st._cache[key])) {
+                let stmt = 'SELECT * FROM file_info WHERE name LIKE @name'
+                if (orderby) stmt = `${stmt} ORDER BY ${orderby}`;
+                if (desc) stmt = `${stmt} DESC`;
+                stmt = `${stmt}, name`
+                if (limit) stmt = `${stmt} LIMIT @limit`
+                if (offset) stmt = `${stmt} offset @offset`
+                stmt = `${stmt};`
+                st._cache[key] = db.prepare(stmt)
+                console.warn('!!! Statement prepared for:', key)
+                console.warn(stmt)
+            }
+            return st._cache[key]
+        }
     }
 
     // Public methods
@@ -62,6 +82,14 @@ const public = (() => {
         },
         getThumbs (ids) {
             return db.transaction((data) => data.map(getThumb))(ids)
+        },
+        searchPage(name, orderby='name', desc=false, limit, offset) {
+            values = {name: `%${name}%`, orderby, desc, limit, offset}
+            return st.search(orderby, desc, limit, offset).all(values)
+        },
+        searchIter(name, orderby='name', desc=false) {
+            values = {name: `%${name}%`, orderby, desc}
+            return st.search(orderby, desc).iterate(values)
         }
     }
 })();
