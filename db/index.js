@@ -34,7 +34,6 @@ const public = (() => {
                 stmt = `${stmt};`
                 st._cache[key] = db.prepare(stmt)
                 console.warn('!!! Statement prepared for:', key)
-                console.warn(stmt)
             }
             return st._cache[key]
         }
