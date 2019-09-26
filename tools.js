@@ -51,7 +51,7 @@ function getSortFunction(a, b, sortBy, sortReverse) {
 }
 
 // This is the driver method for reading file info from database, hashing, thumbnailing, etc.
-function getFileData(item) {
+function getFileData(item, resolveAfterInsert=false) {
     return new Promise((resolve, reject) => {
         fs.readFile(item.path, (err, file) => {
             if (err) {
@@ -63,16 +63,20 @@ function getFileData(item) {
                     resolve(Object.assign(item, row))
                 } else {
                     Media.inspect(item.path).then(meta => {
-                        const data = {
+                        const dbData = {
                             name: item.name,
+                            path: item.path,
                             xxhash: id,
                             mtime: item.mtime,
-                            ext: item.ext,
+                            type: item.ext,
+                            size: item.size,
                             width: meta.width,
                             height: meta.height,
                         }
-                        resolve(Object.assign(item, data))
-                        db.addFile(data)
+                        item = Object.assign(item, dbData)
+                        if (!resolveAfterInsert) resolve(item);
+                        db.addFile(item)
+                        if (resolveAfterInsert) resolve(item);
                     }).catch(reject)
                 }
             }

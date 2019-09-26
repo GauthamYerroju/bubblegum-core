@@ -5,9 +5,9 @@ const tagDefTable = 'tag_definition'
 const tagFileMapTable = 'tag_file_map'
 const queries = {
     // File Info
-    createFileTable: `CREATE TABLE IF NOT EXISTS ${fileTable} (id INTEGER PRIMARY KEY, name TEXT, xxhash TEXT, mtime REAL, ext TEXT, width INTEGER, height INTEGER);`,
+    createFileTable: `CREATE TABLE IF NOT EXISTS ${fileTable} (id INTEGER PRIMARY KEY, name TEXT, path TEXT UNIQUE, xxhash TEXT, mtime REAL, type TEXT, size INTEGER, width INTEGER, height INTEGER);`,
     getFile: `SELECT * FROM ${fileTable} WHERE xxhash=@xxhash;`,
-    addFile: `INSERT INTO ${fileTable} (name, xxhash, mtime, ext, width, height) VALUES (@name, @xxhash, @mtime, @ext, @width, @height);`,
+    addFile: `INSERT INTO ${fileTable} (name, path, xxhash, mtime, type, size, width, height) VALUES (@name, @path, @xxhash, @mtime, @type, @size, @width, @height);`,
     removeFile: `DELETE FROM ${fileTable} WHERE xxhash=@xxhash;`,
     // Thumbnail Info
     createThumbTable: `CREATE TABLE IF NOT EXISTS ${thumbTable} (id INTEGER PRIMARY KEY, xxhash TEXT, sequence INTEGER);`,
