@@ -46,21 +46,17 @@ const public = (() => {
         addFile (info) {
             return st.addFile.run(info)
         },
-        removeFile (id) {
-            return st.removeFile.run({ xxhash: id })
+        removeFileById (id) {
+            return st.removeFileById.run({ id })
         },
-        getFile (id) {
-            return st.getFile.get({ xxhash: id })
+        getFileByPath (path) {
+            return st.getFileByPath.get({ path })
         },
-        // Files batched
-        addFiles (infoArr) {
-            return db.transaction((data) => data.map(addFile))(infoArr)
+        getFileByHash (xxhash) {
+            return st.getFileByHash.get({ xxhash })
         },
-        removeFiles (ids) {
-            return db.transaction((data) => data.map(removeFile))(ids)
-        },
-        getFiles (ids) {
-            return db.transaction((data) => data.map(getFile))(ids)
+        getFileByHashAndPath (xxhash, path) {
+            return st.getFileByHashAndPath.get({ xxhash, path })
         },
         // Thumbs
         addThumb (info) {
@@ -72,16 +68,7 @@ const public = (() => {
         getThumb (id) {
             return st.getThumb.get({ xxhash: id })
         },
-        // Thumbs batched
-        addThumbs (infoArr) {
-            return db.transaction((data) => data.map(addThumb))(infoArr)
-        },
-        removeThumbs (ids) {
-            return db.transaction((data) => data.map(removeThumb))(ids)
-        },
-        getThumbs (ids) {
-            return db.transaction((data) => data.map(getThumb))(ids)
-        },
+        // Search
         searchPage(name, orderby='name', desc=false, limit, offset) {
             values = {name: `%${name}%`, orderby, desc, limit, offset}
             return st.search(orderby, desc, limit, offset).all(values)

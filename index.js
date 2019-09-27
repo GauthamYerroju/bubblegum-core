@@ -1,5 +1,5 @@
 const db = require('./db')
-const { iterDir, getFileData } = require('./tools.js')
+const { iterDir, getFileData, searchDb } = require('./tools.js')
 const { Media } = require('./media')
 const { ImageHandler } = require('./media/image')
 const { VideoHandler } = require('./media/video')
@@ -10,13 +10,10 @@ Media.addHandler(VideoHandler)
 module.exports = {
     iterDir,
     getFileData,
-    // TODO: Wrap these around functions which will check file's existance, and update/clean DB when file no longer exists.
-    searchDb: db.searchPage,
-    iterDb: db.searchIter
+    searchDb
 }
 
 // TODO: normalize backslashes to forward slashes in tools#iterDir
-// TODO: Why do I need path in file_info table again? Implement xxhash and check IO. If too much, fall back to layered diffing using mtime and xxhash
 
 const sandbox = false
 if (sandbox) {
