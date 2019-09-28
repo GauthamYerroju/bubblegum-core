@@ -6,10 +6,10 @@ class DefaultHandler {
     static name = 'DefaultHandler'
 
     static inspect(file) {
-        return Promise.reject(`Handler not found for: ${file}.`)
+        return Promise.reject({code: 'ENOHANDLER', message: `Handler not found for: ${file}.`})
     }
     static saveThumbnail(file, dest) {
-        return Promise.reject(`Handler not found for: ${file}.`)
+        return Promise.reject({code: 'ENOHANDLER', message: `Handler not found for: ${file}.`})
     }
 }
 

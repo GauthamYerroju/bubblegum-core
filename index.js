@@ -1,5 +1,5 @@
 const db = require('./db')
-const { iterDir, getFileData, searchDb } = require('./tools.js')
+const { iterDir, getFileData, getFileDataBatch, searchDb } = require('./tools.js')
 const { Media } = require('./media')
 const { ImageHandler } = require('./media/image')
 const { VideoHandler } = require('./media/video')
@@ -10,6 +10,7 @@ Media.addHandler(VideoHandler)
 module.exports = {
     iterDir,
     getFileData,
+    getFileDataBatch,
     searchDb
 }
 

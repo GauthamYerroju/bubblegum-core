@@ -6,7 +6,7 @@ const tagFileMapTable = 'tag_file_map'
 const queries = {
     // File Info
     createFileTable: `CREATE TABLE IF NOT EXISTS ${fileTable} (id INTEGER PRIMARY KEY, name TEXT, path TEXT UNIQUE, xxhash TEXT, mtime REAL, type TEXT, size INTEGER, width INTEGER, height INTEGER);`,
-    addFile: `INSERT INTO ${fileTable} (name, path, xxhash, mtime, type, size, width, height) VALUES (@name, @path, @xxhash, @mtime, @type, @size, @width, @height);`,
+    addFile: `INSERT OR IGNORE INTO ${fileTable} (name, path, xxhash, mtime, type, size, width, height) VALUES (@name, @path, @xxhash, @mtime, @type, @size, @width, @height);`,
     getFileByPath: `SELECT * FROM ${fileTable} WHERE path=@path;`,
     getFileByHash: `SELECT * FROM ${fileTable} WHERE xxhash=@xxhash;`,
     getFileByHashAndPath: `SELECT * FROM ${fileTable} WHERE xxhash=@xxhash AND path=@path;`,

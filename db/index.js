@@ -41,10 +41,10 @@ const public = (() => {
 
     // Public methods
     return {
-        _db: db, // TODO: Remove after testing
+        _db: db,
         // Files
         addFile (info) {
-            return st.addFile.run(info)
+            st.addFile.run(info)
         },
         removeFileById (id) {
             return st.removeFileById.run({ id })
@@ -52,21 +52,15 @@ const public = (() => {
         getFileByPath (path) {
             return st.getFileByPath.get({ path })
         },
-        getFileByHash (xxhash) {
-            return st.getFileByHash.get({ xxhash })
-        },
-        getFileByHashAndPath (xxhash, path) {
-            return st.getFileByHashAndPath.get({ xxhash, path })
-        },
         // Thumbs
         addThumb (info) {
             return st.addThumb.run(info)
         },
-        removeThumb (id) {
-            return st.removeThumb.run({ xxhash: id })
+        removeThumb (xxhash) {
+            return st.removeThumb.run({ xxhash })
         },
-        getThumb (id) {
-            return st.getThumb.get({ xxhash: id })
+        getThumb (xxhash) {
+            return st.getThumb.get({ xxhash })
         },
         // Search
         searchPage(name, orderby='name', desc=false, limit, offset) {
