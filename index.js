@@ -14,8 +14,6 @@ module.exports = {
     searchDb
 }
 
-// TODO: normalize backslashes to forward slashes in tools#iterDir
-
 const sandbox = false
 if (sandbox) {
     const process = require('process')
