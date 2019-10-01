@@ -1,11 +1,11 @@
 {
     "fs": {
         "defaultDir": "test_media",
-        "recurse": false,
-        "thumbnailDir": "thumbnails"
+        "recurse": false
     },
-    "image": {
-        "shrinkOnly": true
+    "thumbnail": {
+        "dir": "thumbnails",
+        "size": 400
     },
     "statKeys": {
         "size": "size",

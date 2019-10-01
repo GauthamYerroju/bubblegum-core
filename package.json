@@ -21,7 +21,6 @@
     "config": "^3.2.2",
     "fluent-ffmpeg": "^2.1.2",
     "mime-types": "^2.1.24",
-    "sharp": "^0.22.1",
     "xxhash": "^0.3.0"
   }
 }

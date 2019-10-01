@@ -12,9 +12,9 @@ const queries = {
     getFileByHashAndPath: `SELECT * FROM ${fileTable} WHERE xxhash=@xxhash AND path=@path;`,
     removeFileById: `DELETE FROM ${fileTable} WHERE id=@id;`,
     // Thumbnail Info
-    createThumbTable: `CREATE TABLE IF NOT EXISTS ${thumbTable} (id INTEGER PRIMARY KEY, xxhash TEXT, sequence INTEGER);`,
+    createThumbTable: `CREATE TABLE IF NOT EXISTS ${thumbTable} (id INTEGER PRIMARY KEY, xxhash TEXT, sequence INTEGER, path TEXT);`,
     getThumb: `SELECT * FROM ${thumbTable} WHERE xxhash=@xxhash;`,
-    addThumb: `INSERT INTO ${thumbTable} (xxhash, sequence) VALUES (@xxhash, @sequence);`,
+    addThumb: `INSERT INTO ${thumbTable} (xxhash, sequence, path) VALUES (@xxhash, @sequence, @path);`,
     removeThumb: `DELETE FROM ${thumbTable} WHERE xxhash=@xxhash;`,
     // Tag Types
     createTagTypeTable: `CREATE TABLE IF NOT EXISTS ${tagTypeTable} (id INTEGER PRIMARY KEY, name TEXT);`,

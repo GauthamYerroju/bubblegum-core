@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const mime = require('mime-types')
 const config = require('config')
 const xxhash = require('xxhash')
 const { promisify } = require('util')
@@ -71,12 +72,41 @@ function getFileData(item, resolveAfterInsert=false) {
     }
     const row = db.getFileByPath(item.path)
     if (!row) {
-        return importFile(item, resolveAfterInsert)
+        return importFile(item, resolveAfterInsert).catch(error => Object.assign(item, { error }))
     }
+    item = Object.assign(item, row)
     if (item.mtime === row.mtime) {
-        return Promise.resolve(Object.assign(item, row))
+        const thumb = db.getThumb(item.xxhash)
+        if (thumb) {
+          return new Promise((resolve, reject) => {
+            promisify(fs.stat)(thumb.path)
+              .then(() => {
+                resolve(Object.assign(item, { thumb: thumb.path }))
+              })
+              .catch(err => {
+                if (err.code !== 'ENOENT') {
+                  reject(err)
+                  return
+                }
+                // Thumbnail file doesn't exist, re-create it
+                db.removeThumb(item.xxhash)
+                createThumb(item)
+                  .then(thumbPath => {
+                    resolve(Object.assign(item, { thumb: thumbPath }))
+                  })
+                  .catch(reject)
+              })
+          })
+        }
+        return new Promise((resolve, reject) => {
+          createThumb(item)
+            .then(thumbPath => {
+              resolve(Object.assign(item, { thumb: thumbPath }))
+            })
+            .catch(reject)
+        })
     }
-    return importFile(item, resolveAfterInsert)
+    return importFile(item, resolveAfterInsert).catch(error => Object.assign(item, { error }))
 }
 function getFileDataBatch(items, resolveAfterInsert) {
     const dbFetchCount = items.filter(i => !(i.dir || i.error)).length
@@ -85,12 +115,44 @@ function getFileDataBatch(items, resolveAfterInsert) {
     }
     const rows = db._db.transaction(() => items.map(item => (item.dir || item.error) ? item : db.getFileByPath(item.path)))()
     const promises = rows.map(function(row, i) {
-        const item = items[i]
+        let item = items[i]
+        if (item.dir || item.error) {
+          return Promise.resolve(item)
+        }
         if (!row) {
             return importFile(item, resolveAfterInsert).catch(error => Object.assign(item, { error }))
         }
+        item = Object.assign(item, row)
         if (item.mtime === row.mtime) {
-            return Promise.resolve(Object.assign(item, row))
+            const thumb = db.getThumb(item.xxhash)
+            if (thumb) {
+              return new Promise((resolve, reject) => {
+                promisify(fs.stat)(thumb.path)
+                  .then(() => {
+                    resolve(Object.assign(item, { thumb: thumb.path }))
+                  })
+                  .catch(err => {
+                    if (err.code !== 'ENOENT') {
+                      reject(err)
+                      return
+                    }
+                    // Thumbnail file doesn't exist, re-create it
+                    db.removeThumb(item.xxhash)
+                    createThumb(item)
+                      .then(thumbPath => {
+                        resolve(Object.assign(item, { thumb: thumbPath }))
+                      })
+                      .catch(reject)
+                  })
+              })
+            }
+            return new Promise((resolve, reject) => {
+              createThumb(item)
+                .then(thumbPath => {
+                  resolve(Object.assign(item, { thumb: thumbPath }))
+                })
+                .catch(reject)
+            })
         }
         return importFile(item, resolveAfterInsert).catch(error => Object.assign(item, { error }))
     })
@@ -115,15 +177,48 @@ function importFile(item, resolveAfterInsert) {
                     height: meta.height,
                   }
                   item = Object.assign(item, dbData)
-                  if (!resolveAfterInsert) resolve(item);
-                  console.log('Indexing file:', item.path)
                   db.addFile(item)
-                  // TODO: Make thumbnail and add to DB
-                  if (resolveAfterInsert) resolve(item);
+
+                  // Make thumbnail and add to DB if needed
+                  createThumb(item)
+                    .then(savedThumb => {
+                      resolve(Object.assign(item, { thumb: savedThumb }))
+                    })
+                    .catch(reject)
                 })
           })
-          .catch(err => err.code === 'ENOHANDLER' ? resolve(item) : reject(err))
+          .catch(err => {
+            if (err.code === 'ENOHANDLER') {
+              resolve(item)
+              return
+            }
+            console.error(err)
+            resolve(item)
+          })
     })
+}
+function createThumb(item) {
+  const thumb = db.getThumb(item.xxhash)
+  if (thumb) {
+    item = Object.assign(item, { thumb: thumb.path })
+    return Promise.resolve(item)
+  }
+  const mtype = mime.lookup(item.path)
+  const isGif = mtype.startsWith('video') || mtype === 'image/gif'
+  const thumbName = item.xxhash + (isGif ? '.gif' : '.png')
+  const thumbDest = getThumbPath(thumbName)
+  return new Promise((resolve, reject) => {
+    ensureDirSync(path.dirname(thumbDest))
+    Media.saveThumbnail(item.path, thumbDest)
+      .then(savedPath => {
+        db.addThumb({ xxhash: item.xxhash, sequence: 0, path: thumbDest })
+        resolve(savedPath)
+      })
+      .catch(err => {
+        console.error(err)
+        reject(err)
+      })
+  })
 }
 
 // Driver method for reading DB rows (and pass through filesystem, cleaning up entries as needed)
@@ -136,7 +231,7 @@ function searchDb(name, orderby='name', desc=false, limit, offset) {
           if (err) {
             if (err.code === 'ENOENT') {
                 resolve(null)
-                cleanMissingFile(row)
+                // cleanMissingFile(row) // TODO: just mark for delete, don't clean now
             } else {
                 reject(err)
             }
@@ -160,6 +255,22 @@ function cleanMissingFile(row) {
     // TODO: delete thumbnail files
     // TODO: queue files for delete instead of doing it right here
     db.removeFileById(row.id)
+}
+
+function ensureDirSync (dirpath) {
+    try {
+      fs.mkdirSync(dirpath, { recursive: true })
+    } catch (err) {
+      if (err.code !== 'EEXIST') throw err
+    }
+}
+
+function getThumbPath(thumbName) {
+  return path.resolve(
+    config.get('thumbnail.dir'),
+    thumbName.slice(0, 2),
+    thumbName
+  )
 }
 
 module.exports = {

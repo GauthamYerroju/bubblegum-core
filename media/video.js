@@ -14,23 +14,41 @@ class VideoHandler extends DefaultHandler {
         return new Promise((resolve, reject) => {
             promisify(Ffmpeg.ffprobe)(file)
             .then(data => {
-                if (data.streams) {
-                    for (const stream of data.streams) {
-                        if (stream && stream.width) {
-                            resolve({width: stream.width, height: stream.height})
-                            return
-                        }
-                    }
+                const stream = data.streams.find(stream => stream.width)
+                if (stream) {
+                    resolve({width: stream.width, height: stream.height})
+                    return
                 }
                 reject({error: {message: 'Cannot find metadata', data: data}})
             })
             .catch(reject)
         })
     }
-    
+
     static saveThumbnail(file, dest) {
         // Handle simple thumbnails, GIF and PNG with transparency and animated GIFs
-        return Promise.resolve(file)
+        // Ref: https://engineering.giphy.com/how-to-make-gifs-with-ffmpeg/
+        const size = config.get('thumbnail.size')
+        return new Promise((resolve, reject) => {
+            Ffmpeg(file)
+                .on('stderr', line => {
+                    console.warn(`saveThumbnail error for ${file}: ${line}`)
+                })
+                .on('error', (err, stdout, stderr) => {
+                    console.error(`Cannot create thumbnail for ${file}: ${err.message}`)
+                    reject(err)
+                })
+                .complexFilter([
+                    `[0:v] fps=15,scale=${size}:${size}:force_original_aspect_ratio=decrease,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1`
+                ])
+                .output(dest)
+                .on('end', (stdout, stderr) => {
+                    if (stdout) console.log(`stdout: ${stdout}`);
+                    if (stderr) console.error(`stderr: ${stderr}`);
+                    resolve(dest)
+                })
+                .run()
+        })
     }
 
     static handlesTypesDynamic = Promise.all([
