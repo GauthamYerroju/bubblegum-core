@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "npx standard --fix"
   },
   "repository": {
     "type": "git",
@@ -22,5 +22,12 @@
     "fluent-ffmpeg": "^2.1.2",
     "mime-types": "^2.1.27",
     "xxhash": "^0.3.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "standard": "^14.3.4"
+  },
+  "standard": {
+    "parser": "babel-eslint"
   }
 }
