@@ -18,7 +18,7 @@ const sandbox = false
 if (sandbox) {
   const process = require('process')
   const config = require('config')
-  const tools = require('./tools.js')
+  // const tools = require('./tools.js')
 
   const dir = process.argv[2] || config.get('fs.defaultDir')
   const recurse = process.argv[3] || config.get('fs.recurse')
